@@ -1,0 +1,69 @@
+import pandas as pd
+from matplotlib import pyplot as plt 
+import seaborn as sns 
+
+df = pd.read_excel("baby_names.xlsx")
+df.dropna()
+
+# STEP 1 
+print("Step 1: Most Given Name")
+print("=========================")
+
+mostPopular = df.groupby(["name", "year"])['percent'].max().sort_values(ascending = False).reset_index().head(1)
+
+print(f"\nThe name {mostPopular['name'].iloc[0]} was given to {mostPopular['percent'].iloc[0]}% of babies in the year {mostPopular['year'].iloc[0]}  ") 
+
+# STEP 2
+print("\nStep 2: Recommendation Method 1")
+print("=========================")
+
+gender = input("Gender (girl/boy): ")
+style = input("Style (modern/classic/none): ")
+
+genderFiltered = df[df.sex == gender]
+
+if style == 'modern':
+    modernNames = genderFiltered[genderFiltered['year'] >= 1990].sort_values(by = 'percent', ascending = False).reset_index().head(1)
+    print(f"\nWe suggest the name {modernNames['name'].iloc[0]}") 
+
+elif style == 'classic':
+    classicNames = genderFiltered[genderFiltered['year'] <= 1899].sort_values(by = 'percent', ascending = False).reset_index().head(1)
+    print(f"\nWe suggest the name {classicNames['name'].iloc[0]}") 
+    
+else:
+    none = genderFiltered.groupby(["name", "year"])['percent'].max().sort_values(ascending = False).reset_index().head(1)
+    print(f"\nWe suggest the name {none['name'].iloc[0]}")
+        
+ 
+# STEP 3
+print("\nStep 3: Recommendation Method 2")
+print("=========================") 
+
+nameInput = input("Name: ")
+
+nameFiltered = df[df.name == nameInput]
+namePop = nameFiltered.groupby(['name', 'year'])['percent'].max().sort_values(ascending = False).reset_index().head(1)
+
+yFiltered = df[df.year == namePop['year'].iloc[0]]
+topName = yFiltered['name'].iloc[0]
+secondName = yFiltered['name'].iloc[1]
+
+print(f"\n{namePop['name'].iloc[0]} was most popular in {namePop['year'].iloc[0]}")
+
+if topName == nameInput:
+    print(f"\nWe suggest the name {secondName}")
+else:
+    print(f"\nWe suggest the name {topName}") 
+    
+# STEP 4
+print("\nStep 4: Popularity Graph")
+print("=========================") 
+
+userInput = input("Name: ")
+
+userFiltered = df[df.name == userInput] 
+
+plt.figure(figsize=(12, 10))
+plt.xlabel("Percent")
+plt.ylabel("Year")
+sns.lineplot(data = userFiltered, y = 'percent', x = 'year')
